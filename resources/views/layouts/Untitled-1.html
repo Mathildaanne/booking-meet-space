@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>@yield('title', 'Dashboard User')</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md min-h-screen">
+            <div class="p-4 text-2xl font-bold text-blue-800">MeetSpace</div>
+            <nav class="mt-6">
+                <a href="{{ route('user.dashboard') }}" class="block py-2 px-4 hover:bg-blue-100">Dashboard</a>
+                <a href="{{ route('bookings.index') }}" class="block py-2 px-4 hover:bg-blue-100">Booking</a>
+                <a href="{{ route('jadwal.index') }}" class="block py-2 px-4 hover:bg-blue-100">Jadwal</a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-4">
+                    @csrf
+                    <button class="w-full text-left py-2 px-4 text-red-600 hover:bg-red-100">Logout</button>
+                </form>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 bg-gray-50">
+            @yield('content')
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>
+
+
+
