@@ -1,9 +1,11 @@
 @extends('layouts.user')
 
-@section('title', 'Jadwal Bookingku')
+@section('title', 'Riwayat Bookingku')
 
 @section('styles')
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
 <style>
     .status-badge {
         padding: 4px 12px;
@@ -54,6 +56,7 @@
         color: #b91c1c;
     }
 
+    
 
 </style>
 @endsection
@@ -62,7 +65,7 @@
 <div class="max-w-7xl mx-auto px-4 py-6">
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-4">
         <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-calendar-check text-blue-600"></i> Jadwal Booking Saya
+            <i class="fas fa-calendar-check text-blue-600"></i> Riwayat Booking Saya
         </h2>
     </div>
 

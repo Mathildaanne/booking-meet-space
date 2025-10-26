@@ -68,7 +68,9 @@ class Kernel extends HttpKernel
 
     ];
 
-    protected function schedule(\Illuminate\Console\Scheduling\Schedule $schedule) { 
-        $schedule->command('booking:autofinish')->everyMinute(); 
-    } 
+    protected function schedule(Schedule $schedule)
+    {
+        $schedule->command('booking:update-finished')->everyMinute();
+    }
+
 }

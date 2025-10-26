@@ -7,71 +7,83 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Ruang;
+use App\Notifications\BookingCanceled;
+
 
 class BookingController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Tampilkan daftar booking.
      */
     public function index()
     {
-        $bookings = Booking::with(['user', 'ruang'])->latest()->get();
-        return view('admin.booking.index', compact('bookings'));
-    }
-
-    public function adminIndex()
-    {
-        $bookings = Booking::with(['ruang', 'user'])->orderBy('tanggal_booking', 'desc')->get();
+        $bookings = Booking::with(['user', 'ruang'])
+            ->where('status', 'active') 
+            ->latest()
+            ->get();
 
         return view('admin.booking.index', compact('bookings'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
-     * Store a newly created resource in storage.
+     * Tampilkan detail booking tertentu.
      */
-    public function store(Request $request)
+    public function detail($id)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Booking $booking)
-    {
-        $booking->load(['user', 'ruang']);
+        $booking = Booking::with(['user', 'ruang'])->findOrFail($id);
         return view('admin.booking.show', compact('booking'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Hapus data booking.
      */
-    public function edit(string $id)
+    public function destroy($id)
     {
-        //
+        $booking = Booking::findOrFail($id);
+        $booking->delete();
+
+        return redirect()->route('bookings.index')->with('success', 'Data booking berhasil dihapus.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // Tambahan metode jika dibutuhkan:
+    public function create()
     {
-        //
+        // Tampilkan form jika membuat booking via admin (opsional)
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function store(Request $request)
     {
-        //
+        // Validasi dan simpan booking
+    }
+
+    public function edit($id)
+    {
+        // Tampilkan form edit
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi dan update booking
+    }
+
+    public function reject(Request $request, $id)
+    {
+        $booking = Booking::with('ruang', 'user')->findOrFail($id);
+
+        $request->validate([
+            'alasan_pembatalan' => 'required|string|max:255',
+        ]);
+
+        $booking->status = 'rejected';
+        $booking->alasan_pembatalan = $request->alasan_pembatalan;
+        $booking->save();
+
+        // Kirim notifikasi ke user
+        $booking->user->notify(new BookingCanceled($booking));
+
+        return redirect()->back()->with('success', 'Booking berhasil ditolak.');
     }
 }
+
+    

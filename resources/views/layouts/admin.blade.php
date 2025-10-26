@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+    <head>
     <meta charset="UTF-8">
     <title>@yield('title', 'Dashboard User')</title>
+
+    {{-- Global CSS --}}
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {{-- Tambahkan ini untuk memasukkan custom style --}}
+    @yield('styles')
+
+    {{-- Scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/@headlessui/react@1.4.2/dist/headlessui.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 @php
@@ -37,7 +44,7 @@
     <!-- Sidebar -->
     <aside
         class="fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out lg:static lg:translate-x-0"
-        :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }"
+        :class="fixed { '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }"
     >
         <div class="flex items-center justify-between p-4 border-b border-gray-200 shadow-sm lg:justify-start">
             <div class="flex items-center">
@@ -71,13 +78,9 @@
                 <a href="{{ route('admin.karyawan.index') }}"
                 class="block py-1 px-2 rounded text-sm font-medium transition 
                     {{ $route === 'admin.karyawan.index' ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-600 hover:text-white' }}">
-                    Daftar Karyawan
+                    Data Karyawan
                 </a>
-                <a href="{{ route('admin.karyawan.create') }}"
-                class="block py-1 px-2 rounded text-sm font-medium transition 
-                    {{ $route === 'admin.karyawan.create' ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-600 hover:text-white' }}">
-                    Tambah Karyawan
-                </a>
+    
             </div>
 
             <a href="{{ route('admin.booking.index') }}"
@@ -99,12 +102,7 @@
                 <a href="{{ route('admin.ruang.index') }}"
                 class="block py-1 px-2 rounded text-sm font-medium transition 
                     {{ $route === 'admin.ruang.index' ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-600 hover:text-white' }}">
-                    Daftar Ruangan
-                </a>
-                <a href="{{ route('admin.ruang.create') }}"
-                class="block py-1 px-2 rounded text-sm font-medium transition 
-                    {{ $route === 'admin.ruang.create' ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-600 hover:text-white' }}">
-                    Tambah Ruangan
+                    Data Ruangan
                 </a>
             </div>
 
@@ -144,25 +142,52 @@
             </button>
 
             <!-- Center: Search -->
-            <div class="hidden md:flex flex-1 justify-center px-4">
-                <div class="relative w-full max-w-md">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        class="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:ring focus:ring-blue-100 focus:outline-none"
-                    >
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <form method="GET" action="{{ route('admin.karyawan.index') }}" class="hidden md:flex flex-1 justify-center px-4">
+    <div class="relative w-full max-w-md">
+        <input
+            type="text"
+            name="search"
+            placeholder="Cari..."
+            value="{{ request('search') }}"
+            class="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:ring focus:ring-blue-100 focus:outline-none"
+        >
+        <button type="submit">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </button>
+    </div>
+</form>
+
+            <!-- Right: User Dropdown -->
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" class="flex items-center space-x-3 focus:outline-none">
+                    <img src="https://i.pravatar.cc/40?img=3" class="w-10 h-10 rounded-full" alt="User">
+                    <div class="hidden md:block text-right">
+                        <div class="text-sm font-medium">Austin Robertson</div>
+                        <div class="text-xs text-gray-500">Marketing Administrator</div>
+                    </div>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div x-show="open" @click.away="open = false" x-transition
+                    class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    <a href="{{ route('admin.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-user mr-2"></i> Profil Saya
+                    </a>
+                    <a href="{{ route('admin.password') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-key mr-2"></i> Ubah Password
+                    </a>
+                    <a href="{{ route('admin.settings') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-cog mr-2"></i> Pengaturan
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                        </button>
+                    </form>
                 </div>
             </div>
 
-            <!-- Right: User Info -->
-            <div class="flex items-center space-x-3">
-                <img src="https://i.pravatar.cc/40?img=3" class="w-10 h-10 rounded-full" alt="User">
-                <div class="hidden md:block text-right">
-                    <div class="text-sm font-medium">Austin Robertson</div>
-                    <div class="text-xs text-gray-500">Marketing Administrator</div>
-                </div>
-            </div>
         </header>
 
         <!-- Page Content -->
@@ -174,6 +199,7 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@yield('scripts')
+
 </body>
 </html>
-

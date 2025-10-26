@@ -6,7 +6,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
-            background-image: url('/images/latar.png');
+            background: linear-gradient(to bottom right, #0A1D55, #1A6DF5);
             background-size: cover;
             background-position: center;
         }

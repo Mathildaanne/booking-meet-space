@@ -9,30 +9,39 @@ use Illuminate\Http\Request;
 
 class JadwalController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
+        $now = now();
+
+        // Ubah status booking yang sudah lewat menjadi "finished"
+        Booking::where('user_id', Auth::id())
+            ->where('status', 'active')
+            ->where(function ($query) use ($now) {
+                $query->where('tanggal_booking', '<', $now->toDateString())
+                    ->orWhere(function ($q) use ($now) {
+                        $q->where('tanggal_booking', $now->toDateString())
+                            ->where('jam_selesai', '<', $now->format('H:i:s'));
+                    });
+            })->update(['status' => 'finished']);
+
+        // Ambil hanya booking yang masih aktif
         $bookings = Booking::with('ruang')
             ->where('user_id', Auth::id())
-            ->orderBy('tanggal_booking', 'desc')
+            ->where('status', 'active') // ⬅️ tambahkan ini
+            ->orderByDesc('tanggal_booking')
+            ->orderByDesc('jam_mulai')
             ->get();
 
         return view('user.jadwal.index', compact('bookings'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
@@ -63,20 +72,37 @@ class JadwalController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $booking = Booking::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $booking = Booking::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
-        // Boleh dibatalkan hanya jika status belum 'done' dan belum lewat waktunya
+        // Cek apakah booking sudah lewat
         if ($booking->tanggal_booking < now()->toDateString()) {
             return redirect()->back()->withErrors(['msg' => 'Booking sudah lewat dan tidak bisa dibatalkan.']);
         }
 
-        $booking->delete();
+        // Hanya batalkan jika status masih active
+        if ($booking->status !== 'active') {
+            return redirect()->back()->withErrors(['msg' => 'Booking ini sudah tidak aktif.']);
+        }
+
+        $booking->status = 'cancelled';
+        $booking->save();
 
         return redirect()->route('user.jadwal.index')->with('success', 'Booking berhasil dibatalkan.');
     }
+
+    public function riwayat()
+    {
+        $bookings = Booking::where('user_id', auth()->id())
+            ->whereIn('status', ['finished', 'cancelled'])
+            ->orderByDesc('tanggal_booking')
+            ->orderByDesc('jam_mulai')
+            ->get();
+
+        return view('user.jadwal.riwayat', compact('bookings'));
+    }
+
 }

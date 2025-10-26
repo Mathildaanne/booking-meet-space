@@ -17,28 +17,33 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $jumlahBooking = Booking::where('user_id', $user->id)->count();
+        $bookingAktif = Booking::where('user_id', $user->id)
+            ->where(function ($q) {
+                $q->where('tanggal_booking', '>', Carbon::today())
+                ->orWhere(function ($sub) {
+                    $sub->where('tanggal_booking', Carbon::today())
+                        ->where('jam_selesai', '>', Carbon::now()->format('H:i'));
+                });
+            })
+            ->whereIn('status', ['active'])
+            ->count();
 
         $upcoming = Booking::with('ruang')
             ->where('user_id', $user->id)
-            ->where('tanggal_booking', '>=', now()->toDateString())
+            ->where(function ($query) {
+                $query->where('tanggal_booking', '>', Carbon::today())
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('tanggal_booking', Carbon::today())
+                            ->where('jam_mulai', '>', Carbon::now()->format('H:i'));
+                    });
+            })
+            ->where('status', 'active')
             ->orderBy('tanggal_booking')
-            ->first();
+            ->orderBy('jam_mulai')
+            ->limit(5)
+            ->get();
 
-        // Statistik booking per bulan (Januari–Desember)
-        $bookingPerBulan = Booking::selectRaw('MONTH(tanggal_booking) as bulan, COUNT(*) as total')
-            ->whereYear('tanggal_booking', now()->year)
-            ->where('user_id', $user->id)
-            ->groupBy('bulan')
-            ->pluck('total', 'bulan');
-
-        // Siapkan array lengkap 12 bulan (0 jika tidak ada booking)
-        $chartData = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $chartData[] = $bookingPerBulan[$i] ?? 0;
-        }
-
-        return view('user.dashboard', compact('jumlahBooking', 'upcoming', 'chartData'));
+        return view('user.dashboard', compact( 'bookingAktif','upcoming'));
     }
 
     /**

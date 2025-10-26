@@ -7,6 +7,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@headlessui/react@1.4.2/dist/headlessui.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+        @yield('styles')
+
 </head>
 <body class="bg-gray-100 text-gray-800" x-data="{ sidebarOpen: false }">
 <div class="flex min-h-screen">
@@ -66,11 +69,11 @@
                 </div>
 
                 <!-- Jadwal utama (bisa dihapus kalau sudah ada di dropdown) -->
-                <a href="{{ route('jadwal.index') }}"
+                <a href="{{ route('user.jadwal.index') }}"
                 class="flex items-center py-2 px-4 rounded-lg transition
-                        {{ $route === 'jadwal.index' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-500 hover:bg-blue-100' }}">
+                        {{ $route === 'user.jadwal.index' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-500 hover:bg-blue-100' }}">
                     <i class="fas fa-calendar-alt w-5 mr-3 {{ $route === 'jadwal.index' ? 'text-white' : 'text-blue-500' }}"></i>
-                    Jadwal
+                    Jadwal Ku
                 </a>
             </div>
 
@@ -78,17 +81,10 @@
             <div>
                 <h2 class="text-xs font-semibold text-gray-500 uppercase mt-4 mb-1">User</h2>
 
-                <a href="#"
+                <a href="{{ route('user.jadwal.riwayat') }}"
                 class="flex items-center py-2 px-4 rounded-lg transition
-                        {{ $route === 'user.index' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-500 hover:bg-blue-100' }}">
-                    <i class="fas fa-user w-5 mr-3 {{ $route === 'user.index' ? 'text-white' : 'text-blue-500' }}"></i>
-                    User
-                </a>
-
-                <a href="#"
-                class="flex items-center py-2 px-4 rounded-lg transition
-                        {{ $route === 'riwayat.index' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-500 hover:bg-blue-100' }}">
-                    <i class="fas fa-calendar-day w-5 mr-3 {{ $route === 'riwayat.index' ? 'text-white' : 'text-blue-500' }}"></i>
+                        {{ $route === 'user.jadwal.riwayat' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-500 hover:bg-blue-100' }}">
+                    <i class="fas fa-calendar-day w-5 mr-3 {{ $route === 'user.jadwal.riwayat' ? 'text-white' : 'text-blue-500' }}"></i>
                     Riwayat
                 </a>
             </div>
@@ -136,12 +132,59 @@
             </div>
 
             <!-- Right: User Info -->
-            <div class="flex items-center space-x-3">
-                <img src="https://i.pravatar.cc/40?img=3" class="w-10 h-10 rounded-full" alt="User">
-                <div class="hidden md:block text-right">
-                    <div class="text-sm font-medium">{{ Auth::user()->nama }}</div>
-                    <div class="text-xs text-gray-500">Marketing Administrator</div>
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" class="flex items-center space-x-3 focus:outline-none">
+                    <img src="{{ asset('storage/foto/' . Auth::user()->foto) }}" class="w-15 h-10 rounded-full" alt="User">
+                    <div class="hidden md:block text-right">
+                        <div class="text-sm font-medium">{{ Auth::user()->nama }}</div>
+                        <div class="text-xs text-gray-500">{{ Auth::user()->jabatan ?? 'User' }}</div>
+                    </div>
+                </button>
+
+                <!-- Dropdown -->
+                <div
+                    x-show="open"
+                    x-transition:enter="transition ease-out duration-100"
+                    x-transition:enter-start="transform opacity-0 scale-95"
+                    x-transition:enter-end="transform opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-75"
+                    x-transition:leave-start="transform opacity-100 scale-100"
+                    x-transition:leave-end="transform opacity-0 scale-95"
+                    @click.away="open = false"
+                    x-cloak
+                    class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
+                >
+                    <div class="px-4 py-3 border-b bg-gray-50">
+                        <div class="font-semibold text-sm text-gray-800">{{ Auth::user()->nama }}</div>
+                        <div class="text-xs text-gray-500">{{ Auth::user()->jabatan ?? 'User' }}</div>
+                    </div>
+
+                    <ul class="py-1 text-sm text-gray-700">
+                        <li>
+                            <a href="{{ route('user.profile') }}" class="flex items-center px-4 py-2 hover:bg-gray-100 transition">
+                                <i class="fas fa-user mr-2 w-4"></i> Profil Saya
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('user.password.edit') }}" class="flex items-center px-4 py-2 hover:bg-gray-100 transition">
+                                <i class="fas fa-key mr-2 w-4"></i> Ubah Password
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('user.settings') }}" class="flex items-center px-4 py-2 hover:bg-gray-100 transition">
+                                <i class="fas fa-cog mr-2 w-4"></i> Pengaturan
+                            </a>
+                        </li>
+                    </ul>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center">
+                            <i class="fas fa-sign-out-alt mr-2 w-4"></i> Logout
+                        </button>
+                    </form>
                 </div>
+
             </div>
         </header>
 
@@ -152,6 +195,7 @@
     </div>
 </div>
 
+    @yield('scripts')
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>

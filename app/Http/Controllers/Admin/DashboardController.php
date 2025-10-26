@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Booking;
 use App\Models\Ruang;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -15,8 +16,21 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $todayBooking = Booking::whereDate('tanggal_booking', now())->count();
-        $totalRuangan = \App\Models\Ruang::count();
+        $today = now()->toDateString();
+        $now = now()->format('H:i:s');
+        
+        // Semua data statistik
+        $totalUsers = User::count();
+        $totalBooking = Booking::count();
+        $totalRuangan = Ruang::count();
+        $todayBooking = Booking::whereDate('tanggal_booking', $today)->count();
+
+        // Jadwal hari ini yang masih aktif (jam_selesai > sekarang)
+        $todaySchedules = Booking::with(['user', 'ruang'])
+            ->whereDate('tanggal_booking', $today)
+            ->where('jam_selesai', '>', $now) // hanya yang belum selesai
+            ->orderBy('jam_mulai')
+            ->get();
 
         // Statistik Booking per bulan
         $bookingPerBulan = Booking::selectRaw('MONTH(tanggal_booking) as bulan, COUNT(*) as total')
@@ -24,14 +38,22 @@ class DashboardController extends Controller
             ->groupBy('bulan')
             ->pluck('total', 'bulan');
 
-        // Isi 12 bulan
         $chartData = [];
         for ($i = 1; $i <= 12; $i++) {
             $chartData[] = $bookingPerBulan[$i] ?? 0;
         }
 
-        return view('admin.dashboard', compact('todayBooking', 'totalRuangan', 'chartData'));
+        return view('admin.dashboard', compact(
+            'totalUsers',
+            'totalBooking',
+            'totalRuangan',
+            'todayBooking',
+            'todaySchedules',
+            'chartData'
+        ));
+
     }
+
 
     /**
      * Show the form for creating a new resource.
