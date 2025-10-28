@@ -33,7 +33,6 @@ class BookingController extends Controller
      */
     public function create(Request $request, $ruang_id) { 
         $ruang = Ruang::findOrFail($ruang_id);
-        // Ambil tanggal dari query, atau default ke hari ini
         $selectedDate = $request->input('tanggal', Carbon::today()->toDateString());
 
         $now = Carbon::now();
@@ -105,7 +104,6 @@ class BookingController extends Controller
             ])->withInput();
         }
 
-        // 2️⃣ Baru cek bentrok booking
         $isAvailable = Booking::where('ruang_id', $request->ruang_id)
             ->where('tanggal_booking', $request->tanggal_booking)
             ->where(function ($query) use ($request) {
@@ -140,10 +138,8 @@ class BookingController extends Controller
             'status' => 'active',
         ]);
 
-        // Tambahkan eager load relasi ruang
         $booking->load('ruang');
 
-        // Kirim notifikasi ke admin
         Notification::route('mail', 'mathildaanneke10@gmail.com')
             ->notify(new BookingCreated($booking));
 
@@ -227,7 +223,7 @@ class BookingController extends Controller
     {
        $bookings = Booking::where('user_id', auth()->id())
     ->orderBy('tanggal_booking', 'desc') // urutkan tanggal terbaru duluan
-    ->orderBy('jam_mulai', 'desc')       // kalau jam juga ingin dipertimbangkan
+    ->orderBy('jam_mulai', 'desc')       // urutkan by jam
     ->get();
 
         return view('user.jadwal.riwayat', compact('bookings'));

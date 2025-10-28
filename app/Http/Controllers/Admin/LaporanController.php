@@ -33,7 +33,6 @@ class LaporanController extends Controller
 
         $bookings = $query->get();
 
-        // Ringkasan
         $totalPenggunaan = Booking::whereIn('status', ['finished', 'rejected'])->count();
         $totalUser = Booking::whereIn('status', ['finished', 'rejected'])->distinct('user_id')->count('user_id');
         $totalBatal = Booking::where('status', 'rejected')->count();

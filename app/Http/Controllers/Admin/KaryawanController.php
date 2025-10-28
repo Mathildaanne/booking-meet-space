@@ -17,12 +17,12 @@ class KaryawanController extends Controller
 {
     $query = User::query();
 
-    // Filter berdasarkan status jika diisi (active/inactive)
+    // filter berdasarkan status (active/inactive)
     if ($request->filled('status')) {
         $query->where('status', $request->status);
     }
 
-    // Filter berdasarkan keyword pencarian
+    // filter berdasarkan keyword pencarian
     if ($request->filled('search')) {
         $search = $request->search;
 
@@ -32,7 +32,6 @@ class KaryawanController extends Controller
         });
     }
 
-    // Gunakan paginate agar bisa tampil per halaman + appends untuk search
     $karyawans = $query->paginate(10);
 
     return view('admin.karyawan.index', compact('karyawans'));
@@ -44,7 +43,6 @@ class KaryawanController extends Controller
         return view('admin.karyawan.create');
     }
 
-        /* ----------  STORE  ---------- */
     public function store(Request $request)
     {
         $request->validate([
@@ -55,7 +53,6 @@ class KaryawanController extends Controller
             'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // simpan foto (jika ada)
         $fotoName = null;
         if ($request->hasFile('foto')) {
             $fotoName = time() . '_' . $request->file('foto')->getClientOriginalName();
@@ -77,14 +74,12 @@ class KaryawanController extends Controller
             ->with('success', 'Karyawan berhasil ditambahkan.');
     }
 
-    /* ----------  EDIT VIEW  ---------- */
     public function edit($id)
     {
         $karyawan = User::findOrFail($id);
         return view('admin.karyawan.edit', compact('karyawan'));
     }
 
-    /* ----------  UPDATE  ---------- */
     public function update(Request $request, $id)
     {
         $karyawan = User::findOrFail($id);
@@ -98,7 +93,6 @@ class KaryawanController extends Controller
             'status'   => 'required|in:active,inactive',
         ]);
 
-        // jika ada foto baru, hapus foto lama & simpan yang baru
         if ($request->hasFile('foto')) {
             if ($karyawan->foto && Storage::exists('public/foto/' . $karyawan->foto)) {
                 Storage::delete('public/foto/' . $karyawan->foto);
@@ -108,13 +102,11 @@ class KaryawanController extends Controller
             $karyawan->foto = $newFoto;
         }
 
-        // update field lain
         $karyawan->nama    = $request->nama;
         $karyawan->jabatan = $request->jabatan;
         $karyawan->email   = $request->email;
         $karyawan->status  = $request->status;
 
-        // update password hanya jika diisi
         if ($request->filled('password')) {
             $karyawan->password = Hash::make($request->password);
         }

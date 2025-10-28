@@ -20,18 +20,12 @@ use App\Http\Controllers\User\ProfileController as UserProfileController;
 
 Route::get('/', fn () => view('auth.login'));
 
-// -----------------------
-// ✅ Auth Routes
-// -----------------------
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [RegisteredUserController::class, 'create'])->middleware('guest')->name('register');
 Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
-// -----------------------
-// ✅ Redirect dashboard by role
-// -----------------------
 Route::get('/dashboard', function () {
     if (!Auth::check()) return redirect()->route('login');
 
@@ -40,18 +34,14 @@ Route::get('/dashboard', function () {
         : redirect()->route('user.dashboard');
 })->middleware('auth')->name('dashboard');
 
-// -----------------------
-// ✅ Profile Routes
-// -----------------------
+// route untuk profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// -----------------------
-// ✅ Admin Routes
-// -----------------------
+// route untuk admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
     Route::get('/profile', [AdminProfileController::class, 'index'])->name('admin.profile');
@@ -69,9 +59,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/laporan', [LaporanController::class, 'index'])->name('admin.laporan.index');
 });
 
-// -----------------------
-// ✅ User Routes
-// -----------------------
+// route karyawan
 Route::middleware(['auth', 'role:karyawan'])->prefix('user')->group(function () {
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
 
@@ -81,18 +69,18 @@ Route::middleware(['auth', 'role:karyawan'])->prefix('user')->group(function () 
     Route::get('/settings', [UserProfileController::class, 'settings'])->name('user.settings');
     Route::put('/password', [UserProfileController::class, 'updatePassword'])->name('user.password.update');
 
-    // Booking
+    // booking
     Route::get('bookings/create/{ruang}', [UserBookingController::class, 'create'])->name('booking.create');
     Route::resource('/bookings', UserBookingController::class);
 
-    // Jadwal milik user (jadwal pribadi)
+    // jadwal punya karyawan dashboard
     Route::resource('/jadwal', JadwalController::class)
         ->names('user.jadwal')
         ->only(['index', 'show', 'destroy']);
 
     Route::get('user/jadwal/riwayat', [JadwalController::class, 'riwayat'])->name('user.jadwal.riwayat');
 
-    // Jadwal berdasarkan ruangan
+    // jadwal berdasarkan ruangan
     Route::get('/ruang/{ruang}/jadwal', [UserBookingController::class, 'jadwal'])->name('jadwal.ruang');
 
     Route::get('/booking-success', function () {

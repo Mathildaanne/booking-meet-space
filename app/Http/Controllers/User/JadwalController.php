@@ -14,7 +14,7 @@ class JadwalController extends Controller
     {
         $now = now();
 
-        // Ubah status booking yang sudah lewat menjadi "finished"
+        // ubah status booking yang sudah lewat menjadi "finished"
         Booking::where('user_id', Auth::id())
             ->where('status', 'active')
             ->where(function ($query) use ($now) {
@@ -25,10 +25,9 @@ class JadwalController extends Controller
                     });
             })->update(['status' => 'finished']);
 
-        // Ambil hanya booking yang masih aktif
         $bookings = Booking::with('ruang')
             ->where('user_id', Auth::id())
-            ->where('status', 'active') // ⬅️ tambahkan ini
+            ->where('status', 'active')
             ->orderByDesc('tanggal_booking')
             ->orderByDesc('jam_mulai')
             ->get();
@@ -78,12 +77,12 @@ class JadwalController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        // Cek apakah booking sudah lewat
+        // cek booking sudah lewat atau belum
         if ($booking->tanggal_booking < now()->toDateString()) {
             return redirect()->back()->withErrors(['msg' => 'Booking sudah lewat dan tidak bisa dibatalkan.']);
         }
 
-        // Hanya batalkan jika status masih active
+        // Hanya boleh batalkan kalau statusnya masih active
         if ($booking->status !== 'active') {
             return redirect()->back()->withErrors(['msg' => 'Booking ini sudah tidak aktif.']);
         }
