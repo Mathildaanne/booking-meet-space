@@ -18,8 +18,15 @@
     }
 
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .form-title {
@@ -155,19 +162,7 @@
                         @error('jabatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="role" class="form-label">Role Akses</label>
-                        <div class="input-group">
-                            <i class="fa fa-user-shield"></i>
-                            <select name="role" id="role" class="form-select" required>
-                                <option disabled selected>-- Pilih Role --</option>
-                                <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
-                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
-                            </select>
-                        </div>
-                        @error('role')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
+
 
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
@@ -179,22 +174,13 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <i class="fa fa-lock"></i>
-                            <input type="password" name="password" id="password" class="form-control" placeholder="Password akun" required>
-                            <button type="button" class="btn btn-outline-secondary position-absolute end-0 top-50 translate-middle-y" id="togglePass"><i class="fa fa-eye"></i></button>
-                        </div>
-                        @error('password')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-
-                    <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
                         <div class="input-group">
                             <i class="fa fa-toggle-on"></i>
                             <select name="status" id="status" class="form-select" required>
-                                <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                                <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Nonaktif</option>
+
                             </select>
                         </div>
                     </div>

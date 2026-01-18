@@ -13,29 +13,29 @@ class KaryawanController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index(Request $request)
-{
-    $query = User::query();
+    public function index(Request $request)
+    {
+        $query = User::where('role', 'karyawan');
 
-    // filter berdasarkan status (active/inactive)
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
+        // filter berdasarkan status (active/inactive)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // filter berdasarkan keyword pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        $karyawans = $query->paginate(10);
+
+        return view('admin.karyawan.index', compact('karyawans'));
     }
-
-    // filter berdasarkan keyword pencarian
-    if ($request->filled('search')) {
-        $search = $request->search;
-
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', '%' . $search . '%')
-              ->orWhere('email', 'like', '%' . $search . '%');
-        });
-    }
-
-    $karyawans = $query->paginate(10);
-
-    return view('admin.karyawan.index', compact('karyawans'));
-}
 
 
     public function create()
@@ -45,11 +45,12 @@ class KaryawanController extends Controller
 
     public function store(Request $request)
     {
+        $passwordDefault = '12345678';
+
         $request->validate([
             'nama'     => 'required|string|max:100',
             'jabatan'  => 'required|string|max:50',
             'email'    => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
             'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -64,9 +65,9 @@ class KaryawanController extends Controller
             'jabatan'  => $request->jabatan,
             'email'    => $request->email,
             'role'     => 'karyawan',
-            'status'   => $request->status ?? 'active',  
+            'status'   => 'active',
             'foto'     => $fotoName,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($passwordDefault),
         ]);
 
         return redirect()
@@ -82,8 +83,9 @@ class KaryawanController extends Controller
 
     public function update(Request $request, $id)
     {
-        $karyawan = User::findOrFail($id);
-
+        $karyawan = User::where('id', $id)
+            ->where('role', 'karyawan')
+            ->firstOrFail();
         $request->validate([
             'nama'     => 'required|string|max:100',
             'jabatan'  => 'required|string|max:50',
